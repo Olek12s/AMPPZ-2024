@@ -1,0 +1,53 @@
+#include <iostream>
+#include <vector>
+#include <map>
+#include <set>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    std::vector<std::string> words(n);
+    std::set<char> letters;
+    std::map<char, std::vector<std::string>> startWith;
+
+    // Wczytywanie danych
+    for (int i = 0; i < n; i++) {
+        std::cin >> words[i];
+
+        if (!letters.contains(words[i][0])) {
+            letters.insert(words[i][0]);
+            startWith[words[i][0]].push_back(words[i]);
+        }
+    }
+
+    // Znajdujemy dowolne zdanie
+
+    for (const string &str : words) {
+        int n = str.size();
+        std::vector<std::string> result(n);
+
+        bool ok = true;
+        for (int i = 0; i < n; i++) {
+            char c = str[i];
+
+            if (!startWith.contains(c)) {
+                ok = false;
+                break;
+            }
+            result[i] = startWith[c][0];
+        }
+
+        if (ok) {
+            std::cout << n << "\n";
+            for (const std::string &w : result) {
+                std::cout << w << " ";
+            }
+        }
+        std::cout << "\n";
+        return 0;
+    }
+    std::cout << -1 << "\n";
+    return 0;
+}
