@@ -1,0 +1,30 @@
+#include <iostream>
+#include <vector>
+#include <map>
+#include <set>
+using namespace std;
+
+int main() {
+
+    int t;
+    std::cin >> t;
+
+    while (t--) {
+        int TOP_LEFT, TOP_RIGHT;
+        int BOT_LEFT, BOT_RIGHT;
+        std::cin >> TOP_LEFT >> TOP_RIGHT;
+        std::cin >> BOT_LEFT >> BOT_RIGHT;
+
+        int w, h;
+        w = BOT_LEFT - TOP_LEFT;
+        if (TOP_LEFT+1 == TOP_RIGHT && BOT_LEFT+1 == BOT_RIGHT && w >= 2 && TOP_LEFT % w != 0) {
+            h = BOT_RIGHT / w+1;
+            std::cout << h << " " << w << "\n";
+        }
+        else {
+            std::cout << -1 << "\n";
+            continue;
+        }
+    }
+    return 0;
+}
