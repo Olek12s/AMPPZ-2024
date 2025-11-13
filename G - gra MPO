@@ -1,0 +1,129 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int n;
+std::vector<std::string> board;
+
+// 8 kierunków
+int dx[8] = {-1,-1,-1,0,0,1,1,1};
+int dy[8] = {-1,0,1,-1,1,-1,0,1};
+
+bool isInside(int x, int y) {
+    return x >= 0 && x < n && y >= 0 && y < n;
+}
+
+
+int computeAllPoints(std::vector<std::string> &board) {
+    int points = 0;
+    int n = board.size();
+
+    // punkty za struktury
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (board[i][j] == 'M' || board[i][j] == 'P' || board[i][j] == 'O') {
+                points++;
+            }
+        }
+    }
+
+    // punkty za pary (1 punkt za pare) - iterujemy po calej planszy, jesli jest M / P / O to sprawdzamy sasiadow
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (!(board[i][j] == 'M' || board[i][j] == 'P' || board[i][j] == 'O')) continue;
+            for (int d = 0; d < 8; d++) {
+                int ni = i + dx[d];
+                int nj = j + dy[d];
+                if (!isInside(ni, nj)) continue;
+
+                // liczymy tylko 1 raz daną parę (w momencie gdy sasiad ma wiekszy indeks od biezacego pola)
+                // index = i * n + j
+                if (ni * board.size() + nj <= i * board.size() + j) continue;
+
+                char neigh = board[ni][nj];
+                if (neigh == 'M' || neigh == 'P' || neigh == 'O') {
+                    if ((board[i][j] == 'M' && neigh == 'P') || (board[i][j] == 'P' && neigh == 'M')) points++;
+                    else if (board[i][j] == 'O' && neigh == 'O') points++;
+                }
+            }
+        }
+    }
+    return points;
+}
+
+// ile punktów zyskujemy jeśli zbudujemy strukturę na (i,j)
+int deltaIfBuild(const vector<string> &board, int i, int j) {
+    char c = board[i][j];
+    if (!(c == 'm' || c == 'p' || c == 'o')) return -1;
+    char target = toupper(c);
+    int delta = 1; // 1 punkt za samą strukturę
+
+    // sprawdzamy sasiadow
+    for (int d = 0; d < 8; d++) {
+        int ni = i + dx[d];
+        int nj = j + dy[d];
+        if (!isInside(ni, nj)) continue;
+
+        char nb = board[ni][nj];
+        if (!(nb == 'M' || nb == 'P' || nb == 'O')) continue;
+        if ((target == 'M' && nb == 'P') || (target == 'P' && nb == 'M')) delta++;
+        else if (target == 'O' && nb == 'O') delta++;
+    }
+    return delta;
+}
+
+
+
+void printBoard(std::vector<std::string> board, int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            std::cout << board[i][j] << "";
+        }
+        std::cout << "\n";
+    }
+}
+
+
+
+int main() {
+    std::cin >> n;
+    board.resize(n);
+
+    for (int i = 0; i < n; i++) {
+        std::cin >> board[i];
+    }
+
+    int initialPoints = computeAllPoints(board);
+    int currentPoints = initialPoints;
+
+    while (true) {
+        int bestDelta = -1;
+        std::vector<std::pair<int, int>> bestMoves;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                int d = deltaIfBuild(board, i, j);
+                if (d <= 1) continue;   // nie robimy ruchów z których uzyskujemy tylko 1 punkt
+                if (d > bestDelta) {
+                    bestDelta = d;
+                    bestMoves.clear();
+                    bestMoves.push_back({i,j});
+                }
+                else if (d == bestDelta) {
+                    bestMoves.push_back({i,j});
+                }
+            }
+        }
+        if (bestDelta < 2) break; // koniec gry
+
+        // wybierz dowolny najlepszy ruch
+        std::pair<int, int> pair = bestMoves[0];
+        board[pair.first][pair.second] = std::toupper(board[pair.first][pair.second]);  // zamieniamy literke
+        currentPoints += bestDelta;
+    }
+    std::cout << initialPoints << " " << currentPoints << "\n";
+    printBoard(board, n);
+
+    return 0;
+}
